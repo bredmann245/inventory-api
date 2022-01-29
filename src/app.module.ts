@@ -6,6 +6,6 @@ import { DataService } from './services/data/data.service';
 @Module({
   imports: [],
   controllers: [InventoryController],
-  providers: [InventoryService, DataService],
+  providers: [InventoryService, DataService]
 })
 export class AppModule {}

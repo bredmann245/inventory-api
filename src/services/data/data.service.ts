@@ -17,14 +17,14 @@ export class DataService {
                 if (!items || !Array.isArray(JSON.parse(items))) {
                     console.log('Initializing data array.');
                     const initializedInventory = await this.initializeInventoryFile();
-                    res(initializedInventory);
+                    return res(initializedInventory);
                 }
                 if (err) {
                     console.log(err);
-                    rej(err);
+                    return rej(err);
                 }
     
-                res(JSON.parse(items) as Inventory[]);
+                return res(JSON.parse(items) as Inventory[]);
             });
         });
     }
@@ -34,10 +34,10 @@ export class DataService {
             writeFile(FILE_PATH, JSON.stringify(items), 'utf-8', (err) => {
                 if (err) {
                     console.log(err);
-                    rej(err);
+                    return rej(err);
                 }
                 console.log("Added Item to inventory.");
-                res(items);
+                return res(items);
             });
         });
     }
@@ -47,10 +47,10 @@ export class DataService {
             writeFile(FILE_PATH, JSON.stringify([]), 'utf-8', (err) => {
                 if (err) {
                     console.log(err);
-                    rej(err);
+                    return rej(err);
                 }
                 console.log("Inventory Updated.");
-                res(true);
+                return res(true);
             });
         });
     }
@@ -59,12 +59,11 @@ export class DataService {
         return new Promise((res, rej) => {
             try {
                 if (existsSync(FILE_PATH)) {
-                    res(true);
-                } else {
-                    res(false);
-                }   
+                    return res(true);
+                } 
+                return res(false);  
             } catch (err) {
-                rej(err);
+                return rej(err);
             }
         })
     }
