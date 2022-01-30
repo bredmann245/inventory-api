@@ -83,6 +83,7 @@ export class InventoryController {
         });
       }
 
+      //First check if category exists
       const categories: Inventory[] = this.inventorySvc.getItemsByCategory(category);
       if (!categories.length) {
         throw new NotFoundException({

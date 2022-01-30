@@ -2,19 +2,20 @@ import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Inventory } from 'src/models/inventory-model';
 import { DataService } from '../data/data.service';
 import { v4 as uuidv4 } from 'uuid';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Injectable()
 export class InventoryService {
     
     inventoryItems: Inventory[] = [];
     updateDataFile$: BehaviorSubject<Inventory[]> = new BehaviorSubject(null);
+    subscription: Subscription;
 
     constructor(private dataSvc: DataService) {}
 
     async onModuleInit() {
         this.inventoryItems = await this.dataSvc.readInventoryFile();
-        this.updateDataFile$.subscribe(async item => {
+        this.subscription = this.updateDataFile$.subscribe(async item => {
             if (item !== null) {
                 await this.dataSvc.updateInventoryFile(this.inventoryItems);
             } 
@@ -23,6 +24,7 @@ export class InventoryService {
 
     async onModuleDestroy() {
         await this.dataSvc.updateInventoryFile(this.inventoryItems);
+        this.subscription.unsubscribe();
     }
 
 
@@ -43,12 +45,13 @@ export class InventoryService {
         item.id = uuidv4();
         this.inventoryItems.push(item);
 
-        //send the inventory items to write to the file async 
+        //send the inventory items to write to the file asynchronously 
         this.updateDataFile$.next(this.inventoryItems);
         return item;
     }
 
     udpateInventoryItem(inventoryItem: Inventory): Inventory {
+        let removedItem: boolean = false;
         const itemIndex: number = this.inventoryItems.findIndex(item => item.id === inventoryItem.id);
         if (itemIndex < 0) {
             throw new NotFoundException({
@@ -61,12 +64,14 @@ export class InventoryService {
         //otherwise, update the inventory item
         if (inventoryItem.quantity <= 0) {
             this.inventoryItems.splice(itemIndex, 1);
+            removedItem = true;
         } else {
             this.inventoryItems[itemIndex] = inventoryItem;    
         }
         
         this.updateDataFile$.next(this.inventoryItems);
-        return inventoryItem.quantity <= 0 ? null : inventoryItem;
+
+        return removedItem ? null : inventoryItem;
     }
 
     deleteItemByCategory(category: string): void {

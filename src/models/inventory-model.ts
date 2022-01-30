@@ -15,7 +15,7 @@ export const InventorySchemaPost = Joi.object({
 
 export const InventorySchemaPut = Joi.object({
     id: Joi.string().uuid().required(),
-    name: Joi.string(),
-    quantity: Joi.number().greater(-1),
+    name: Joi.string().required(),
+    quantity: Joi.number().greater(-1).required(),
     category: Joi.string()
 }); 
