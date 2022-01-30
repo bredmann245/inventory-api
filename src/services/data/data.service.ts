@@ -10,14 +10,14 @@ export class DataService {
 
     readInventoryFile(): Promise<any> {
         return new Promise(async (res, rej) => {
+            //if the file doesn't exist then create it and initialize
             if (!await this.fileExists()) {
-                await this.initializeInventoryFile();
+                return res(this.initializeInventoryFile());
             }
-            readFile(join(process.cwd(), 'src/models/data.json'), 'utf-8', async (err, items) => {
+            readFile(FILE_PATH, 'utf-8', async (err, items) => {
+                //If no items exist or it is not an array initialize empty array
                 if (!items || !Array.isArray(JSON.parse(items))) {
-                    console.log('Initializing data array.');
-                    const initializedInventory = await this.initializeInventoryFile();
-                    return res(initializedInventory);
+                    return res(this.initializeInventoryFile());
                 }
                 if (err) {
                     console.log(err);
@@ -36,7 +36,6 @@ export class DataService {
                     console.log(err);
                     return rej(err);
                 }
-                console.log("Added Item to inventory.");
                 return res(items);
             });
         });
@@ -50,7 +49,7 @@ export class DataService {
                     return rej(err);
                 }
                 console.log("Inventory Updated.");
-                return res(true);
+                return res([]);
             });
         });
     }

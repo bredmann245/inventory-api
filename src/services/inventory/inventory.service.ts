@@ -8,14 +8,16 @@ import { BehaviorSubject } from 'rxjs';
 export class InventoryService {
     
     inventoryItems: Inventory[] = [];
-    updateDataFile$: BehaviorSubject<Inventory[]> = new BehaviorSubject([]);
+    updateDataFile$: BehaviorSubject<Inventory[]> = new BehaviorSubject(null);
 
     constructor(private dataSvc: DataService) {}
 
     async onModuleInit() {
         this.inventoryItems = await this.dataSvc.readInventoryFile();
         this.updateDataFile$.subscribe(async item => {
-            await this.dataSvc.updateInventoryFile(this.inventoryItems);
+            if (item !== null) {
+                await this.dataSvc.updateInventoryFile(this.inventoryItems);
+            } 
         });
     }
 
@@ -37,9 +39,11 @@ export class InventoryService {
     }
 
     addItem(item: Inventory): Inventory {
-        //assign unique id to inventory item. 
+        //assign unique id to each inventory item. 
         item.id = uuidv4();
         this.inventoryItems.push(item);
+
+        //send the inventory items to write to the file async 
         this.updateDataFile$.next(this.inventoryItems);
         return item;
     }
@@ -53,6 +57,8 @@ export class InventoryService {
             });
         }
 
+        //If the inventory item coming is 0 then we want to remove it from the inventory
+        //otherwise, update the inventory item
         if (inventoryItem.quantity <= 0) {
             this.inventoryItems.splice(itemIndex, 1);
         } else {

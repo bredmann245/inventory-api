@@ -7,8 +7,15 @@ export interface Inventory {
     category?: string
 }
 
-export const InventorySchema = Joi.object({
+export const InventorySchemaPost = Joi.object({
+    name: Joi.string().required(),
+    quantity: Joi.number().greater(0).required(),
+    category: Joi.string()
+}); 
+
+export const InventorySchemaPut = Joi.object({
+    id: Joi.string().uuid().required(),
     name: Joi.string(),
-    quantity: Joi.number(),
+    quantity: Joi.number().greater(-1),
     category: Joi.string()
 }); 
